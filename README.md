@@ -1,14 +1,19 @@
-# react-notehub-styles
+NoteHub Next.js
 
-🎨 CSS Modules for the “NoteHub" homework from the React + TypeScript course.
+Homework project for GoIT.
 
-This repository contains **ready-to-use styles** for the components used in the NoteHub project. Students should copy these `.module.css` files into their own project after creating the corresponding components manually.
+Live Demo
 
-## How to use
+https://06-notehub-nextjs-theta-ruby.vercel.app
 
-1. Create your project manually using Vite + React + TypeScript.
-2. Create each component in `src/components/`, following the structure above.
-3. Copy the `.module.css` files from this repository into the appropriate folders.
-4. Use the provided class names in your JSX.
+GitHub Repository
 
-> No need to write your own styles — just focus on React and TypeScript logic.
+https://github.com/mariiaplakhtyna/06-notehub-nextjs
+
+Built with:
+
+- Next.js
+- TypeScript
+- TanStack Query
+- Formik
+- Yup
