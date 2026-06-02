@@ -1,0 +1,21 @@
+.footer {
+  padding: 16px 32px;
+  border-top: 1px solid #ddd;
+  margin-top: 40px;
+}
+
+.content {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  color: #666;
+}
+
+.wrap {
+  display: flex;
+  gap: 20px;
+}
+
+.wrap a {
+  color: #2563eb;
+}
