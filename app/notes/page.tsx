@@ -1,73 +1,22 @@
-'use client';
-import css from './App.module.css';
-import { useState } from 'react';
-import { useDebouncedCallback } from 'use-debounce';
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import {
+  HydrationBoundary,
+  QueryClient,
+  dehydrate,
+} from "@tanstack/react-query";
+import { fetchNotes } from "@/lib/api";
+import NotesClient from "./Notes.client";
 
-import SearchBox from '@/components/SearchBox/SearchBox';
-import NoteForm from '@/components/NoteForm/NoteForm';
-import NoteList from '@/components/NoteList/NoteList';
-import Pagination from '@/components/Pagination/Pagination';
-import Modal from '@/components/Modal/Modal';
+export default async function NotesPage() {
+  const queryClient = new QueryClient();
 
-import { fetchNotes } from '@/lib/noteService';
-import type { Note } from '@/types/note';
-
-export default function App() {
-  const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const debouncedSearch = useDebouncedCallback((value: string) => {
-    setSearch(value);
-    setPage(1);
-  }, 300);
-
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['notes', page, search],
-    queryFn: () => fetchNotes(page, search),
-    placeholderData: keepPreviousData,
+  await queryClient.prefetchQuery({
+    queryKey: ["notes", "", 1],
+    queryFn: () => fetchNotes(1, ""),
   });
 
-  const notes: Note[] = data?.notes ?? [];
-  const totalPages = data?.totalPages ?? 0;
-
   return (
-    <div className={css.app}>
-      <header className={css.toolbar}>
-        <SearchBox onChange={debouncedSearch} />
-
-        <button
-          className={css.button}
-          onClick={() => setIsModalOpen(true)}
-        >
-          Create note
-        </button>
-      </header>
-
-      {isLoading && <p>Loading...</p>}
-
-      {isError && <p>Error loading notes.</p>}
-
-      {notes.length > 0 && (
-        <NoteList notes={notes} />
-      )}
-
-      {totalPages > 1 && (
-        <Pagination
-          pageCount={totalPages}
-          forcePage={page - 1}
-          onPageChange={({ selected }) => {
-            setPage(selected + 1);
-          }}
-        />
-      )}
-
-      {isModalOpen && (
-        <Modal onClose={() => setIsModalOpen(false)}>
-          <NoteForm onCancel={() => setIsModalOpen(false)} />
-        </Modal>
-      )}
-    </div>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <NotesClient />
+    </HydrationBoundary>
   );
 }
