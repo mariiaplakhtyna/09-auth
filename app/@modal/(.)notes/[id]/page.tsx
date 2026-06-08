@@ -1,4 +1,4 @@
-import NoteDetailsClient from "@/app/notes/[id]/NoteDetails.client";
+import NotePreview from "./NotePreview.client";
 
 type Props = {
   params: Promise<{
@@ -9,5 +9,5 @@ type Props = {
 export default async function NoteModalPage({ params }: Props) {
   const { id } = await params;
 
-  return <NoteDetailsClient id={id} />;
+  return <NotePreview id={id} />;
 }
