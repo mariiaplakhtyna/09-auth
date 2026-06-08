@@ -13,7 +13,11 @@ import Modal from '@/components/Modal/Modal';
 import { fetchNotes } from '@/lib/api';
 import type { Note } from '@/types/note';
 
-export default function NotesClient() {
+type NotesClientProps = {
+  tag?: string;
+};
+
+export default function NotesClient({ tag }: NotesClientProps) {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,8 +28,8 @@ export default function NotesClient() {
   }, 300);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['notes', page, search],
-    queryFn: () => fetchNotes(page, search),
+    queryKey: ['notes', page, search, tag],
+    queryFn: () => fetchNotes(page, search, tag),
     placeholderData: keepPreviousData,
   });
 
