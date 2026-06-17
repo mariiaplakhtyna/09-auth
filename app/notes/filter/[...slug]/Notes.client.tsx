@@ -1,15 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import css from "../../App.module.css";
 import { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 
 import SearchBox from "@/components/SearchBox/SearchBox";
-import NoteForm from "@/components/NoteForm/NoteForm";
 import NoteList from "@/components/NoteList/NoteList";
 import Pagination from "@/components/Pagination/Pagination";
-import Modal from "@/components/Modal/Modal";
 
 import { fetchNotes } from "@/lib/api";
 import type { Note } from "@/types/note";
@@ -21,7 +20,6 @@ type NotesClientProps = {
 export default function NotesClient({ tag }: NotesClientProps) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const debouncedSearch = useDebouncedCallback((value: string) => {
     setSearch(value);
@@ -42,12 +40,9 @@ export default function NotesClient({ tag }: NotesClientProps) {
       <header className={css.toolbar}>
         <SearchBox onChange={debouncedSearch} />
 
-        <button
-          className={css.button}
-          onClick={() => setIsModalOpen(true)}
-        >
-          Create note
-        </button>
+        <Link href="/notes/action/create" className={css.button}>
+          Create note +
+        </Link>
       </header>
 
       {isLoading && <p>Loading...</p>}
@@ -64,12 +59,6 @@ export default function NotesClient({ tag }: NotesClientProps) {
             setPage(selected + 1);
           }}
         />
-      )}
-
-      {isModalOpen && (
-        <Modal onClose={() => setIsModalOpen(false)}>
-          <NoteForm onCancel={() => setIsModalOpen(false)} />
-        </Modal>
       )}
     </div>
   );
