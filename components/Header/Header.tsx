@@ -1,3 +1,4 @@
+import AuthNavigation from "../AuthNavigation/AuthNavigation";
 import Link from "next/link";
 import css from "./Header.module.css";
 
@@ -8,14 +9,17 @@ export default function Header() {
         NoteHub
       </Link>
       <nav aria-label="Main Navigation">
-        <ul className={css.navigation}>
-          <li>
-            <Link href="/">Home</Link>
-          </li>
-          <li>
-           <Link href="/notes/filter/all">Notes</Link>
-          </li>
-        </ul>
+     <ul className={css.navigation}>
+  <li>
+    <Link href="/">Home</Link>
+  </li>
+
+  <li>
+    <Link href="/notes/filter/all">Notes</Link>
+  </li>
+
+  <AuthNavigation />
+</ul>
       </nav>
     </header>
   );

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { fetchNoteById } from "@/lib/api";
+import { fetchNoteById } from "@/lib/api/api";
 import Modal from "@/components/Modal/Modal";
 import NotePreview from "./NoteDetails.client";
 
