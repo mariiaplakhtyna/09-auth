@@ -20,22 +20,68 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
+  if (isPrivateRoute && !accessToken && refreshToken) {
+    try {
+      const session = await checkSession();
+
+      const response = NextResponse.next();
+
+      const setCookie = session.headers["set-cookie"];
+
+      if (setCookie) {
+        response.headers.set(
+          "set-cookie",
+          Array.isArray(setCookie) ? setCookie.join(", ") : setCookie
+        );
+      }
+
+      return response;
+    } catch {
+      return NextResponse.redirect(new URL("/sign-in", request.url));
+    }
+  }
+
   if (isAuthRoute && (accessToken || refreshToken)) {
     try {
       const session = await checkSession();
 
-      if (session.data) {
-        return NextResponse.redirect(new URL("/profile", request.url));
+      const response = NextResponse.redirect(new URL("/", request.url));
+
+      const setCookie = session.headers["set-cookie"];
+
+      if (setCookie) {
+        response.headers.set(
+          "set-cookie",
+          Array.isArray(setCookie) ? setCookie.join(", ") : setCookie
+        );
       }
+
+      if (session.data) {
+        return response;
+      }
+
+      return NextResponse.next();
     } catch {
       return NextResponse.next();
     }
   }
 
-  if (isPrivateRoute && (accessToken || refreshToken)) {
+  if (isPrivateRoute && accessToken) {
     try {
-      await checkSession();
-      return NextResponse.next();
+      const session = await checkSession();
+
+      const response = NextResponse.next();
+
+      const setCookie = session.headers["set-cookie"];
+
+      if (setCookie) {
+        response.headers.set(
+          "set-cookie",
+          Array.isArray(setCookie) ? setCookie.join(", ") : setCookie
+        );
+      }
+
+      return response;
     } catch {
       return NextResponse.redirect(new URL("/sign-in", request.url));
     }
