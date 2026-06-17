@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
-import { fetchNoteById } from "@/lib/api/api";
+import {
+  HydrationBoundary,
+  QueryClient,
+  dehydrate,
+} from "@tanstack/react-query";
+
 import Modal from "@/components/Modal/Modal";
 import NotePreview from "./NoteDetails.client";
+import { fetchNoteById } from "@/lib/api/serverApi";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -13,15 +19,12 @@ export async function generateMetadata({
   const { id } = await params;
   const note = await fetchNoteById(id);
 
-  const title = `${note.title} | NoteHub`;
-  const description = note.content.slice(0, 100);
-
   return {
-    title,
-    description,
+    title: `${note.title} | NoteHub`,
+    description: note.content.slice(0, 100),
     openGraph: {
-      title,
-      description,
+      title: note.title,
+      description: note.content.slice(0, 100),
       url: `https://notehub.com/notes/${id}`,
       images: [
         {
@@ -38,9 +41,18 @@ export async function generateMetadata({
 export default async function NotePage({ params }: Props) {
   const { id } = await params;
 
+  const queryClient = new QueryClient();
+
+  await queryClient.prefetchQuery({
+    queryKey: ["note", id],
+    queryFn: () => fetchNoteById(id),
+  });
+
   return (
     <Modal onClose={() => {}}>
-  <NotePreview id={id} />
-</Modal>
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <NotePreview id={id} />
+      </HydrationBoundary>
+    </Modal>
   );
 }
