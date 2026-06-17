@@ -41,7 +41,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  if (isAuthRoute && (accessToken || refreshToken)) {
+  if (isAuthRoute && accessToken) {
     try {
       const session = await checkSession();
 
