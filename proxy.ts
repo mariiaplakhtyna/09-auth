@@ -4,40 +4,53 @@ import { checkSession } from "@/lib/api/serverApi";
 const privateRoutes = ["/profile", "/notes"];
 const authRoutes = ["/sign-in", "/sign-up"];
 
+const isRouteMatch = (pathname: string, routes: string[]) =>
+  routes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+
+const applySetCookie = (
+  response: NextResponse,
+  setCookie?: string | string[]
+) => {
+  if (!setCookie) return;
+
+  if (Array.isArray(setCookie)) {
+    setCookie.forEach((cookie) => response.headers.append("set-cookie", cookie));
+  } else {
+    response.headers.append("set-cookie", setCookie);
+  }
+};
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const accessToken = request.cookies.get("accessToken")?.value;
   const refreshToken = request.cookies.get("refreshToken")?.value;
 
-  const isPrivateRoute = privateRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-
-  const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
+  const isPrivateRoute = isRouteMatch(pathname, privateRoutes);
+  const isAuthRoute = isRouteMatch(pathname, authRoutes);
 
   if (isPrivateRoute && !accessToken && !refreshToken) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
-  if (isPrivateRoute && !accessToken && refreshToken) {
+  if (refreshToken && !accessToken) {
     try {
       const session = await checkSession();
 
-      const response = NextResponse.next();
+      const response =
+        isAuthRoute && session.data
+          ? NextResponse.redirect(new URL("/", request.url))
+          : NextResponse.next();
 
-      const setCookie = session.headers["set-cookie"];
-
-      if (setCookie) {
-        response.headers.set(
-          "set-cookie",
-          Array.isArray(setCookie) ? setCookie.join(", ") : setCookie
-        );
-      }
+      applySetCookie(response, session.headers["set-cookie"]);
 
       return response;
     } catch {
-      return NextResponse.redirect(new URL("/sign-in", request.url));
+      if (isPrivateRoute) {
+        return NextResponse.redirect(new URL("/sign-in", request.url));
+      }
+
+      return NextResponse.next();
     }
   }
 
@@ -45,18 +58,10 @@ export async function proxy(request: NextRequest) {
     try {
       const session = await checkSession();
 
-      const response = NextResponse.redirect(new URL("/", request.url));
-
-      const setCookie = session.headers["set-cookie"];
-
-      if (setCookie) {
-        response.headers.set(
-          "set-cookie",
-          Array.isArray(setCookie) ? setCookie.join(", ") : setCookie
-        );
-      }
-
       if (session.data) {
+        const response = NextResponse.redirect(new URL("/", request.url));
+        applySetCookie(response, session.headers["set-cookie"]);
+
         return response;
       }
 
@@ -71,15 +76,7 @@ export async function proxy(request: NextRequest) {
       const session = await checkSession();
 
       const response = NextResponse.next();
-
-      const setCookie = session.headers["set-cookie"];
-
-      if (setCookie) {
-        response.headers.set(
-          "set-cookie",
-          Array.isArray(setCookie) ? setCookie.join(", ") : setCookie
-        );
-      }
+      applySetCookie(response, session.headers["set-cookie"]);
 
       return response;
     } catch {
